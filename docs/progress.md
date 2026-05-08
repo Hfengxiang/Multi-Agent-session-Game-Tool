@@ -17,8 +17,8 @@
 | 3 | AgentAdapter ABC + AgentResult | ✅ 已完成 |
 | 4 | Prompt 模板 | ✅ 已完成 |
 | 5 | ClaudeCodeAdapter + 单元测试 | ✅ 已完成（6/6 tests pass） |
-| 6 | GameMaster 状态机 | ⏳ 进行中 |
-| 7 | CLI 入口 | ⬜ 待开始 |
+| 6 | GameMaster 状态机 | ✅ 已完成 |
+| 7 | CLI 入口 | ⏳ 进行中 |
 | 8 | 角色模板示例 | ⬜ 待开始 |
 | 9 | 集成测试 | ⬜ 待开始 |
 
