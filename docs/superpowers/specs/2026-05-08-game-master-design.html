@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Master — 架构设计图</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --border: #334155;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent2: #a78bfa;
+    --green: #4ade80;
+    --yellow: #fbbf24;
+    --red: #f87171;
+    --orange: #fb923c;
+    --pink: #f472b6;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    padding: 40px;
+    line-height: 1.6;
+  }
+  h1 { font-size: 28px; margin-bottom: 8px; color: #fff; }
+  h2 { font-size: 20px; margin: 48px 0 24px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  .subtitle { color: var(--muted); margin-bottom: 40px; font-size: 14px; }
+
+  /* ========== Architecture Flow ========== */
+  .flow-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    font-size: 13px;
+  }
+  .flow-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 48px;
+    flex-wrap: wrap;
+  }
+  .box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 24px;
+    text-align: center;
+    min-width: 180px;
+  }
+  .box-title { font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+  .box-desc { color: var(--muted); font-size: 12px; }
+  .box.accent { border-color: var(--accent); box-shadow: 0 0 12px rgba(56,189,248,.15); }
+  .box.accent .box-title { color: var(--accent); }
+  .box.green { border-color: var(--green); box-shadow: 0 0 12px rgba(74,222,128,.15); }
+  .box.green .box-title { color: var(--green); }
+  .box.purple { border-color: var(--accent2); box-shadow: 0 0 12px rgba(167,139,250,.15); }
+  .box.purple .box-title { color: var(--accent2); }
+  .box.orange { border-color: var(--orange); }
+  .box.orange .box-title { color: var(--orange); }
+  .box.pink { border-color: var(--pink); }
+  .box.pink .box-title { color: var(--pink); }
+
+  .arrow-down {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 4px 0; color: var(--muted);
+  }
+  .arrow-down .line { width: 2px; height: 20px; background: var(--border); }
+  .arrow-down .head { width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 8px solid var(--border); }
+  .arrow-label { font-size: 11px; color: var(--muted); margin: 2px 0; }
+
+  .big-box {
+    background: var(--surface);
+    border: 2px solid var(--accent);
+    border-radius: 14px;
+    padding: 28px 36px 20px;
+    position: relative;
+    min-width: 680px;
+  }
+  .big-box-label {
+    position: absolute; top: -12px; left: 24px;
+    background: var(--accent); color: #0f172a;
+    font-weight: 700; font-size: 13px;
+    padding: 2px 14px; border-radius: 6px;
+  }
+  .inner-row {
+    display: flex; align-items: center; justify-content: center;
+    gap: 24px; flex-wrap: wrap; margin-bottom: 16px;
+  }
+  .inner-col {
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+  }
+  .sbox {
+    background: #0f2744;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 16px;
+    text-align: center;
+    font-size: 12px;
+    min-width: 140px;
+  }
+  .sbox .stitle { font-weight: 600; font-size: 13px; }
+  .sbox .sdesc { color: var(--muted); font-size: 11px; }
+  .sbox.accent { border-color: var(--accent); }
+  .sbox.accent .stitle { color: var(--accent); }
+  .sbox.purple { border-color: var(--accent2); }
+  .sbox.purple .stitle { color: var(--accent2); }
+  .sbox.green { border-color: var(--green); }
+  .sbox.green .stitle { color: var(--green); }
+  .sbox.pink { border-color: var(--pink); }
+  .sbox.pink .stitle { color: var(--pink); }
+  .sbox.dashed { border-style: dashed; }
+
+  .label-tag {
+    display: inline-block; font-size: 10px; padding: 1px 8px;
+    border-radius: 4px; background: var(--border); color: var(--muted);
+    margin-top: 4px;
+  }
+  .label-tag.active { background: var(--green); color: #0f172a; font-weight: 600; }
+  .label-tag.pending { background: #334155; color: var(--muted); }
+
+  .h-arrow {
+    display: flex; align-items: center; color: var(--muted);
+    font-size: 11px; gap: 4px;
+  }
+  .h-arrow .h-line { width: 16px; height: 2px; background: var(--border); }
+  .h-arrow .h-head { width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:7px solid var(--border); }
+
+  .output-box {
+    background: #0a1a1a;
+    border: 1px solid var(--green);
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-family: 'Cascadia Code', 'Fira Code', monospace;
+    font-size: 12px;
+    color: var(--green);
+    margin-top: 16px;
+    display: inline-block;
+    text-align: left;
+  }
+
+  /* ========== Class Diagram ========== */
+  .class-diagram {
+    display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start;
+    justify-content: center;
+  }
+  .class-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    min-width: 240px;
+    overflow: hidden;
+  }
+  .class-name {
+    padding: 10px 16px;
+    font-weight: 700;
+    font-size: 14px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(56,189,248,.08);
+    color: var(--accent);
+  }
+  .class-name.abstract { font-style: italic; color: var(--accent2); }
+  .class-section { padding: 8px 16px; border-bottom: 1px solid var(--border); }
+  .class-section:last-child { border-bottom: none; }
+  .class-method { font-size: 12px; color: var(--text); padding: 2px 0; font-family: 'Cascadia Code', monospace; }
+  .class-method .kw { color: var(--accent2); }
+  .class-method .fn { color: var(--yellow); }
+
+  .relation {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; min-width: 80px; color: var(--muted);
+    font-size: 11px; gap: 4px;
+  }
+  .relation .rline { width: 2px; height: 24px; background: var(--border); }
+  .relation .rdiamond { width: 12px; height: 8px; background: var(--border); }
+  .relation .rtriangle { width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 12px solid var(--border); }
+
+  /* ========== Sequence ========== */
+  .seq-container {
+    display: flex; gap: 0; align-items: flex-start;
+    overflow-x: auto; padding: 20px 0;
+  }
+  .seq-lane {
+    display: flex; flex-direction: column; align-items: center;
+    min-width: 100px;
+  }
+  .seq-lane-title {
+    font-weight: 600; font-size: 12px; margin-bottom: 12px;
+    padding: 6px 12px; border-radius: 6px;
+    background: var(--surface); border: 1px solid var(--border);
+  }
+  .seq-step {
+    display: flex; align-items: center; margin-bottom: 8px;
+    width: 100%; position: relative;
+  }
+  .seq-timeline {
+    display: flex; flex-direction: column; width: 100%;
+    gap: 16px; margin-top: 32px;
+  }
+  .seq-row {
+    display: flex; align-items: center; gap: 16px;
+    font-size: 12px;
+  }
+  .seq-ts { color: var(--muted); font-size: 11px; min-width: 48px; }
+  .seq-msg {
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 4px 10px; border-radius: 4px;
+    font-family: monospace; font-size: 11px;
+  }
+
+  /* ========== State Machine ========== */
+  .fsm {
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    justify-content: center; padding: 20px 0;
+  }
+  .fsm-node {
+    width: 100px; height: 56px;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center; font-size: 12px; font-weight: 600;
+    border-radius: 10px; border: 2px solid var(--border);
+    background: var(--surface);
+  }
+  .fsm-node.start { border-color: var(--green); color: var(--green); }
+  .fsm-node.end { border-color: var(--green); color: var(--green); }
+  .fsm-node.working { border-color: var(--accent); color: var(--accent); }
+  .fsm-node.abort { border-color: var(--red); color: var(--red); }
+  .fsm-arrow {
+    font-size: 18px; color: var(--muted); font-weight: bold;
+  }
+  .fsm-arrow-label {
+    font-size: 10px; color: var(--muted); margin: 0 -8px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Game Master</h1>
+<p class="subtitle">双 AI Agent 博弈框架 — 架构设计 · 2026-05-09</p>
+
+<!-- ==================== Architecture Flow ==================== -->
+<h2>一、架构全景图</h2>
+
+<div class="flow-container">
+
+  <!-- CLI Entry + Interrupt Sources -->
+  <div class="flow-row" style="gap: 80px">
+    <div class="box accent" style="border-color: var(--red); box-shadow: 0 0 12px rgba(248,113,113,.15)">
+      <div class="box-title" style="color: var(--red)">⏹ 中断入口</div>
+      <div class="box-desc">Ctrl+C 终端信号<br>或 写入 control-queue.json<br>{"command": "quit"}</div>
+    </div>
+    <div class="box accent">
+      <div class="box-title">💻 CLI 入口</div>
+      <div class="box-desc">python game_master.py<br>--task · --exec-role · --eval-role</div>
+    </div>
+  </div>
+
+  <!-- Two arrows converging -->
+  <div class="inner-row" style="gap: 120px; margin: 6px 0">
+    <div class="h-arrow">
+      <div class="h-line" style="width:32px"></div><div class="h-head"></div>
+      <span style="color:var(--red);font-size:11px">quit</span>
+      <div class="h-line" style="width:32px"></div><div class="h-head"></div>
+    </div>
+    <div class="h-arrow">
+      <div class="h-line" style="width:32px"></div><div class="h-head"></div>
+      <span style="font-size:11px">start</span>
+      <div class="h-line" style="width:32px"></div><div class="h-head"></div>
+    </div>
+  </div>
+
+  <!-- GameMaster Container -->
+  <div class="big-box">
+    <div class="big-box-label">GameMaster 主程序</div>
+
+    <!-- Control Queue -->
+    <div class="inner-row">
+      <div class="sbox green" style="border-color: var(--red); box-shadow: 0 0 12px rgba(248,113,113,.12)">
+        <div class="stitle">📋 ControlQueue</div>
+        <div class="sdesc">control-queue.json</div>
+        <span class="label-tag active">每轮前检查 → quit → ABORT</span>
+      </div>
+    </div>
+
+    <!-- internal flow: control queue → main loop -->
+    <div class="inner-row" style="margin-top:4px">
+      <div class="h-arrow">
+        <div class="h-line"></div><div class="h-head"></div>
+        <span style="font-size:11px">无 quit → 继续</span>
+        <div class="h-line"></div><div class="h-head"></div>
+      </div>
+    </div>
+
+    <!-- Main Loop -->
+    <div class="inner-row">
+      <div class="sbox accent">
+        <div class="stitle">🔄 主循环</div>
+        <div class="sdesc">round = 1 .. N</div>
+      </div>
+    </div>
+
+    <!-- Two Turns -->
+    <div class="inner-row">
+      <div class="inner-col">
+        <div class="sbox purple">
+          <div class="stitle">🔨 Executor Turn</div>
+          <div class="sdesc">build_prompt(executor)<br>execute → 修改文件</div>
+        </div>
+      </div>
+      <div class="h-arrow">
+        <div class="h-line"></div><div class="h-head"></div>
+        <span>mailbox</span>
+        <div class="h-line"></div><div class="h-head"></div>
+      </div>
+      <div class="inner-col">
+        <div class="sbox pink">
+          <div class="stitle">🔍 Evaluator Turn</div>
+          <div class="sdesc">build_prompt(evaluator)<br>execute → 评分</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Adapter -->
+    <div class="arrow-down"><div class="line" style="height:12px"></div></div>
+    <div class="inner-row">
+      <div class="sbox orange" style="min-width:220px">
+        <div class="stitle">🔌 AgentAdapter 层</div>
+        <div class="sdesc">抽象接口: build_prompt / execute / parse_output</div>
+      </div>
+    </div>
+
+    <!-- Three adapters -->
+    <div class="inner-row">
+      <div class="sbox green">
+        <div class="stitle">Claude Code</div>
+        <div class="sdesc">claude -p</div>
+        <span class="label-tag active">当前实现</span>
+      </div>
+      <div class="sbox dashed">
+        <div class="stitle">Codex</div>
+        <div class="sdesc">codex exec</div>
+        <span class="label-tag pending">后续</span>
+      </div>
+      <div class="sbox dashed">
+        <div class="stitle">Gemini</div>
+        <div class="sdesc">gemini CLI</div>
+        <span class="label-tag pending">后续</span>
+      </div>
+    </div>
+
+    <!-- Mailbox -->
+    <div class="arrow-down"><div class="line" style="height:12px"></div></div>
+    <div class="inner-row">
+      <div class="sbox">
+        <div class="stitle">📬 Mailbox</div>
+        <div class="sdesc">executor-inbox.json / evaluator-inbox.json</div>
+      </div>
+      <div class="sbox">
+        <div class="stitle">📜 history.jsonl</div>
+        <div class="sdesc">完整博弈记录</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Two outputs: done and abort -->
+  <div class="inner-row" style="margin-top: 16px; gap: 80px">
+    <!-- Done -->
+    <div style="display:flex;flex-direction:column;align-items:center">
+      <div class="arrow-down"><div class="line" style="height:16px"></div><div class="head"></div></div>
+      <div class="box green" style="min-width:200px">
+        <div class="box-title">✅ 正常结束</div>
+        <div class="box-desc">score ≥ 95</div>
+      </div>
+    </div>
+
+    <!-- Abort -->
+    <div style="display:flex;flex-direction:column;align-items:center">
+      <div class="arrow-down"><div class="line" style="height:16px;background:var(--red)"></div><div class="head" style="border-top-color:var(--red)"></div></div>
+      <div class="box" style="border-color:var(--red);box-shadow:0 0 12px rgba(248,113,113,.15);min-width:200px">
+        <div class="box-title" style="color:var(--red)">🛑 中断退出</div>
+        <div class="box-desc">收到 quit 指令 → 优雅退出<br>输出已完成轮次摘要</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-down" style="margin-top:12px"><div class="line"></div><div class="head"></div></div>
+  <div class="box green">
+    <div class="box-title">🖥 终端输出（每轮一行摘要，不污染上下文）</div>
+  </div>
+
+  <div class="output-box">
+    [Round 1] Executor: 修改 resume.md → Evaluator: 65分 | 排版改善<br>
+    [Round 2] Executor: 增加量化成果 → Evaluator: 78分 | 数据有力<br>
+    [Round 3] Executor: 补充关键词 → Evaluator: 96分 ✓ 达标！
+  </div>
+</div>
+
+
+<!-- ==================== Class Diagram ==================== -->
+<h2>二、核心类图</h2>
+
+<div class="class-diagram">
+
+  <!-- GameMaster -->
+  <div class="class-card">
+    <div class="class-name">GameMaster</div>
+    <div class="class-section">
+      <div class="class-method"><span class="kw">__init__</span>(config, adapter, mailbox, ctrl_queue)</div>
+    </div>
+    <div class="class-section">
+      <div class="class-method">+ <span class="fn">run</span>() → GameResult</div>
+      <div class="class-method">+ <span class="fn">stop</span>()</div>
+      <div class="class-method">- <span class="fn">_executor_turn</span>()</div>
+      <div class="class-method">- <span class="fn">_evaluator_turn</span>()</div>
+      <div class="class-method">- <span class="fn">_check_control_queue</span>()</div>
+    </div>
+  </div>
+
+  <!-- Holds -->
+  <div class="relation">
+    <span style="font-size:11px">◇ holds</span>
+  </div>
+
+  <!-- ControlQueue -->
+  <div class="class-card">
+    <div class="class-name">ControlQueue</div>
+    <div class="class-section">
+      <div class="class-method">+ <span class="fn">push</span>(command)</div>
+      <div class="class-method">+ <span class="fn">pop_all</span>() → list</div>
+      <div class="class-method">+ <span class="fn">has_quit</span>() → bool</div>
+    </div>
+  </div>
+
+  <!-- Mailbox -->
+  <div class="class-card">
+    <div class="class-name">Mailbox</div>
+    <div class="class-section">
+      <div class="class-method">+ <span class="fn">put_executor_msg</span>(msg)</div>
+      <div class="class-method">+ <span class="fn">get_executor_msg</span>()</div>
+      <div class="class-method">+ <span class="fn">put_evaluator_msg</span>(msg)</div>
+      <div class="class-method">+ <span class="fn">get_evaluator_msg</span>()</div>
+      <div class="class-method">+ <span class="fn">append_history</span>(entry)</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="class-diagram" style="margin-top:32px">
+  <!-- AgentAdapter -->
+  <div class="class-card">
+    <div class="class-name abstract">«abstract» AgentAdapter</div>
+    <div class="class-section">
+      <div class="class-method"><span class="kw">abstract</span> <span class="fn">build_prompt</span>(role, task, feedback, history) → str</div>
+      <div class="class-method"><span class="kw">abstract</span> <span class="fn">execute</span>(prompt, tools, timeout) → AgentResult</div>
+      <div class="class-method"><span class="kw">abstract</span> <span class="fn">parse_output</span>(raw) → dict</div>
+    </div>
+  </div>
+
+  <!-- Implements -->
+  <div class="relation">
+    <div class="rtriangle"></div>
+    <span style="font-size:11px">implements</span>
+  </div>
+
+  <!-- Three implementations -->
+  <div style="display:flex;flex-direction:column;gap:16px">
+    <div class="class-card" style="border-color:var(--green);box-shadow:0 0 12px rgba(74,222,128,.12)">
+      <div class="class-name" style="color:var(--green)">ClaudeCodeAdapter <span class="label-tag active" style="margin-left:8px">当前</span></div>
+      <div class="class-section">
+        <div class="class-method">build_prompt → 合并 base + role + feedback + history</div>
+        <div class="class-method">execute → subprocess.run(["claude", "-p", prompt])</div>
+        <div class="class-method">parse_output → 正则提取 /score:\s*(\d+)/i</div>
+      </div>
+    </div>
+    <div class="class-card" style="opacity:.5">
+      <div class="class-name">CodexAdapter <span class="label-tag pending">后续</span></div>
+      <div class="class-section">
+        <div class="class-method">execute → subprocess.run(["codex", "exec", prompt])</div>
+      </div>
+    </div>
+    <div class="class-card" style="opacity:.5">
+      <div class="class-name">GeminiAdapter <span class="label-tag pending">后续</span></div>
+      <div class="class-section">
+        <div class="class-method">execute → subprocess.run(["gemini", prompt])</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ==================== State Machine ==================== -->
+<h2>三、状态机（含中断路径）</h2>
+
+<div class="fsm">
+  <div class="fsm-node start">INIT<br>校验参数</div>
+  <div class="fsm-arrow">→</div>
+
+  <!-- Control Queue Check -->
+  <div class="fsm-node working" style="border-color:var(--red)">
+    CHECK<br>CONTROL<br>QUEUE
+  </div>
+
+  <!-- Quit → ABORT path (going down) -->
+  <div style="display:flex;flex-direction:column;align-items:center;margin-top:0">
+    <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--red)">
+      ⬇ quit 消息
+    </div>
+    <div class="fsm-node abort" style="margin-top:6px">ABORT<br>优雅退出</div>
+  </div>
+
+  <!-- Normal path -->
+  <div style="display:flex;align-items:center;gap:0;margin-left:8px">
+    <div class="fsm-arrow">→</div>
+  </div>
+
+  <div class="fsm-node working">EXECUTOR<br>TURN</div>
+  <div class="fsm-arrow">→</div>
+  <div class="fsm-node working">EVALUATOR<br>TURN</div>
+
+  <!-- Branch: score check -->
+  <div style="display:flex;flex-direction:column;align-items:center;gap:0;margin-top:-28px">
+    <div class="fsm-arrow" style="font-size:12px;color:var(--green)">score ≥ 95 →</div>
+    <div class="fsm-node end" style="margin-top:4px">DONE<br>输出结果</div>
+    <div class="fsm-arrow" style="font-size:12px;transform:rotate(180deg);margin-top:12px">
+      ← score &lt; 95 &amp;&amp; round &lt; max
+    </div>
+  </div>
+
+  <!-- Max rounds -->
+  <div style="display:flex;flex-direction:column;align-items:center;margin-top:12px">
+    <div class="fsm-arrow" style="font-size:11px;color:var(--yellow)">round = max →</div>
+    <div class="fsm-node end" style="margin-top:4px;border-color:var(--yellow);color:var(--yellow)">DONE<br>取最高分</div>
+  </div>
+</div>
+
+
+<!-- ==================== Sequence ==================== -->
+<h2>四、单轮序列图</h2>
+
+<h3 style="color:var(--green);margin-bottom:16px">正常博弈流</h3>
+
+<div class="seq-timeline">
+  <div class="seq-row">
+    <span class="seq-ts">0</span>
+    <strong style="color:var(--red)">ControlQueue</strong>
+    <span class="h-arrow"><div class="h-line" style="width:32px;background:var(--red)"></div><div class="h-head" style="border-left-color:var(--red)"></div></span>
+    <strong>GameMaster</strong>
+    <span class="seq-msg" style="color:var(--green)">pop_all() → [] (无 quit，继续)</span>
+  </div>
+  <div class="seq-row">
+    <span class="seq-ts">1</span>
+    <strong>GameMaster</strong>
+    <span class="h-arrow"><div class="h-line" style="width:36px"></div><div class="h-head"></div></span>
+    <strong>Adapter</strong>
+    <span class="seq-msg">build_prompt(executor, task, feedback, history)</span>
+  </div>
+  <div class="seq-row">
+    <span class="seq-ts">2</span>
+    <strong>GameMaster</strong>
+    <span class="h-arrow"><div class="h-line" style="width:36px"></div><div class="h-head"></div></span>
+    <strong>Adapter</strong>
+    <span class="seq-msg">execute(prompt, rw_tools, timeout) → subprocess: claude -p</span>
+  </div>
+  <div class="seq-row">
+    <span class="seq-ts">3</span>
+    <strong>GameMaster</strong>
+    <span class="h-arrow"><div class="h-line" style="width:36px"></div><div class="h-head"></div></span>
+    <strong>Adapter</strong>
+    <span class="seq-msg">parse_output(raw) → {summary, files_modified, ...}</span>
+  </div>
+  <div class="seq-row">
+    <span class="seq-ts">4</span>
+    <strong>GameMaster</strong>
+    <span class="h-arrow"><div class="h-line" style="width:36px"></div><div class="h-head"></div></span>
+    <strong>Mailbox</strong>
+    <span class="seq-msg">put_evaluator_msg(executor_result)</span>
+  </div>
+  <div class="seq-row" style="opacity:.6">
+    <span class="seq-ts">5-8</span>
+    <em>Evaluator Turn: ControlQueue check → build_prompt → execute → parse → mailbox</em>
+  </div>
+  <div class="seq-row">
+    <span class="seq-ts">9</span>
+    <strong>GameMaster</strong>
+    <span class="h-arrow"><div class="h-line" style="width:36px"></div><div class="h-head"></div></span>
+    <strong>Mailbox</strong>
+    <span class="seq-msg">append_history(round_entry)</span>
+  </div>
+  <div class="seq-row">
+    <span class="seq-ts">10</span>
+    <strong>GameMaster</strong>
+    <span class="h-arrow"><div class="h-line" style="width:36px"></div><div class="h-head"></div></span>
+    <strong>stdout</strong>
+    <span class="seq-msg">[Round N] 摘要...</span>
+  </div>
+</div>
+
+<h3 style="color:var(--red);margin:28px 0 16px;border-top:1px solid var(--border);padding-top:20px">中断场景</h3>
+
+<div class="seq-timeline">
+  <div class="seq-row">
+    <span class="seq-ts">—</span>
+    <strong style="color:var(--red)">外部用户 / MCP</strong>
+    <span class="h-arrow"><div class="h-line" style="width:32px;background:var(--red)"></div><div class="h-head" style="border-left-color:var(--red)"></div></span>
+    <strong style="color:var(--red)">ControlQueue</strong>
+    <span class="seq-msg" style="border-color:var(--red);color:var(--red)">push({"command":"quit"})</span>
+  </div>
+  <div class="seq-row" style="margin-top:12px">
+    <span class="seq-ts">—</span>
+    <span style="font-size:11px;color:var(--muted)">... 当前轮执行完毕，下一轮开始前 ...</span>
+  </div>
+  <div class="seq-row">
+    <span class="seq-ts">N</span>
+    <strong style="color:var(--red)">ControlQueue</strong>
+    <span class="h-arrow"><div class="h-line" style="width:32px;background:var(--red)"></div><div class="h-head" style="border-left-color:var(--red)"></div></span>
+    <strong>GameMaster</strong>
+    <span class="seq-msg" style="border-color:var(--red);color:var(--red)">pop_all() → [{command:"quit"}] → 停止子进程 → 输出摘要 → exit(2)</span>
+  </div>
+</div>
+
+</body>
+</html>

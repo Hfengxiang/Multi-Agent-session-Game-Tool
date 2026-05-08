@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(start *)",
+      "Bash(explorer.exe *)",
+      "Bash(cmd.exe *)",
+      "Bash(powershell *)",
+      "Bash(git init *)",
+      "Bash(git config *)",
+      "Bash(python -c \"from core.mailbox import Mailbox; print\\('OK'\\)\")",
+      "Bash(git remote *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
+    ]
+  }
+}
