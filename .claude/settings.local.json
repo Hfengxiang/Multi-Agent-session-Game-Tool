@@ -11,7 +11,10 @@
       "Bash(git remote *)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(python -c \"from core.mailbox import Mailbox; print\\('Mailbox OK'\\)\")",
+      "Bash(python -c \"from core.control_queue import ControlQueue; print\\('OK'\\)\")",
+      "Bash(python -c \"from adapters.base import AgentAdapter, AgentResult; print\\('Task 3 OK'\\)\")"
     ]
   }
 }

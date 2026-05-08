@@ -3,7 +3,7 @@
 ## 当前状态
 
 **阶段：** 实现阶段 — Subagent-Driven Development  
-**当前步骤：** Task 1 (Mailbox) 准备派发中  
+**当前步骤：** Task 5 完成，准备 Task 6  
 **最后更新：** 2026-05-09
 
 ---
@@ -12,17 +12,17 @@
 
 | Task | 内容 | 状态 |
 |------|------|------|
-| 1 | Mailbox（消息邮箱） | ⏳ 就绪，待派发 |
-| 2 | ControlQueue（控制队列） | ⬜ 待开始 |
-| 3 | AgentAdapter ABC + AgentResult | ⬜ 待开始 |
-| 4 | Prompt 模板 | ⬜ 待开始 |
-| 5 | ClaudeCodeAdapter + 单元测试 | ⬜ 待开始 |
-| 6 | GameMaster 状态机 | ⬜ 待开始 |
+| 1 | Mailbox（消息邮箱） | ✅ 已完成 |
+| 2 | ControlQueue（控制队列） | ✅ 已完成 |
+| 3 | AgentAdapter ABC + AgentResult | ✅ 已完成 |
+| 4 | Prompt 模板 | ✅ 已完成 |
+| 5 | ClaudeCodeAdapter + 单元测试 | ✅ 已完成（6/6 tests pass） |
+| 6 | GameMaster 状态机 | ⏳ 进行中 |
 | 7 | CLI 入口 | ⬜ 待开始 |
 | 8 | 角色模板示例 | ⬜ 待开始 |
 | 9 | 集成测试 | ⬜ 待开始 |
 
-- ⬜ 待开始 ⏳ 就绪/进行中 ✅ 已完成
+- ⬜ 待开始 ⏳ 进行中 ✅ 已完成
 
 ---
 
@@ -110,4 +110,7 @@ E:\WorkSpace\Projects\GameTool\
 3. 确认方案：独立 Python CLI + Adapter 模式 + 文件邮箱 + 消息队列中断
 4. 生成架构 HTML 图表（含中断路径）
 5. 使用 writing-plans 生成 9-task 实现计划
-6. 使用 subagent-driven-development 开始执行，Task 1 就绪
+6. 使用 subagent-driven-development 开始执行
+7. 关联远程仓库 https://github.com/Hfengxiang/Multi-Agent-session-Game-Tool.git
+8. Task 1-4 手动快速实现（Mailbox / ControlQueue / Adapter ABC / Prompts）
+9. Task 5 子 agent 实现（ClaudeCodeAdapter + 6 单元测试 all pass）
