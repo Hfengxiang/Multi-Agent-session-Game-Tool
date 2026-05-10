@@ -14,7 +14,10 @@
       "Bash(git push *)",
       "Bash(python -c \"from core.mailbox import Mailbox; print\\('Mailbox OK'\\)\")",
       "Bash(python -c \"from core.control_queue import ControlQueue; print\\('OK'\\)\")",
-      "Bash(python -c \"from adapters.base import AgentAdapter, AgentResult; print\\('Task 3 OK'\\)\")"
+      "Bash(python -c \"from adapters.base import AgentAdapter, AgentResult; print\\('Task 3 OK'\\)\")",
+      "Bash(python *)",
+      "Bash(where claude *)",
+      "Bash(claude -p \"say hello in one word\" --output-format text --allowedTools \"\")"
     ]
   }
 }

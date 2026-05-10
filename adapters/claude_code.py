@@ -39,9 +39,11 @@ class ClaudeCodeAdapter(AgentAdapter):
 
     def execute(self, prompt: str, allowed_tools: list[str],
                 timeout: int) -> AgentResult:
+        import shutil
+        claude_path = shutil.which("claude") or "claude"
         tools_arg = ",".join(allowed_tools)
         cmd = [
-            "claude", "-p", prompt,
+            claude_path, "-p", prompt,
             "--allowedTools", tools_arg,
             "--output-format", "text",
         ]
@@ -52,6 +54,8 @@ class ClaudeCodeAdapter(AgentAdapter):
                 text=True,
                 timeout=timeout,
                 cwd=self.work_dir,
+                encoding="utf-8",
+                errors="replace",
             )
             return AgentResult(
                 success=result.returncode == 0,
